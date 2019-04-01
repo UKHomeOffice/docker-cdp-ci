@@ -1,7 +1,7 @@
 FROM node:8-alpine
 
 ENV KD_VERSION=1.12.1
-ENV KUBECTL_VERSION=1.10.11
+ENV KUBECTL_VERSION=1.12.3
 
 RUN apk upgrade -q --no-cache
 RUN apk add -q --no-cache \
