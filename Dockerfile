@@ -18,6 +18,7 @@ RUN apk add -q --no-cache \
   libffi-dev \
   make \
   musl-dev \
+  openssh-client \
   openssl \
   openssl-dev \
   py-pip \
@@ -42,5 +43,7 @@ RUN curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/late
   xargs curl -O -L && \
 mv kustomize_*_linux_amd64 /usr/bin/kustomize && \
 chmod u+x /usr/bin/kustomize
+
+ADD deployment-scripts /usr/bin/
 
 CMD ["bash"]
