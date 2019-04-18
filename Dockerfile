@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:8-alpine as build
 
 ENV KUBECTL_VERSION=1.12.3
 
@@ -47,3 +47,11 @@ chmod u+x /usr/bin/kustomize
 ADD deployment-scripts /usr/bin/
 
 CMD ["bash"]
+
+FROM build as test
+RUN echo 'Beginning tests'
+RUN cd / && git clone https://github.com/sstephenson/bats.git &&  cd bats && ./install.sh /usr/local
+ADD tests /tests
+RUN set -e && for i in /tests/*.sh; do $i; done
+
+FROM build
