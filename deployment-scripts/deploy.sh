@@ -1,8 +1,8 @@
-#! /bin/bash
+#!/bin/bash
 
 function usage {
     cat << EOF
-Usage: ${0} BASE_DIR ENV GIT_HUB_DEPLOYMENT_KEY
+Usage: ${0} BASE_DIR ENV
 Deploys to the ENV environment.
 BASE_DIR is the base folder containing the configurations for all environments
 EOF
@@ -22,6 +22,7 @@ fi
 
 export BASE_DIR=$1
 export KUBE_NAMESPACE=$2
+export TEST=$3
 
 set -euo pipefail
 # automatically export all environment variables
@@ -65,7 +66,7 @@ TAG=$(cat ${ENV_BASE_DIR}/cdp-version)
 CDP_DEPLOYMENT_TEMPLATES_DIR=${ENV_BASE_DIR}/cdp-deployment-templates
 rm -rf ${CDP_DEPLOYMENT_TEMPLATES_DIR}
 cd ${ENV_BASE_DIR}
-git clone --branch ${TAG} --depth 1 https://github.com/UKHomeOffice/cdp-deployment-templates.git
+git clone -q --branch ${TAG} --depth 1 https://github.com/UKHomeOffice/cdp-deployment-templates.git 2> /dev/null
 cd -
 
 set -a
@@ -75,14 +76,19 @@ set +a
 
 kubectl="kubectl --insecure-skip-tls-verify --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
 
-echo "Beginning deployment to ${KUBE_NAMESPACE}."
+if [[ -z "${TEST+x}" ]]; then 
+  echo "Beginning deployment to ${KUBE_NAMESPACE}."
 
-kustomize build ${ENV_BASE_DIR}| envsubst | ${kubectl} apply -f - 
+  kustomize build ${ENV_BASE_DIR}| envsubst | ${kubectl} apply -f - 
+  
+  echo "All resources updated."
+  
+  for d in `${kubectl} get deploy -o name`; do
+      ${kubectl} rollout status "${d}"
+  done
+  echo "Complete."
 
-echo "All resources updated."
+else
+  kustomize build ${ENV_BASE_DIR} 
+fi
 
-for d in `${kubectl} get deploy -o name`; do
-    ${kubectl} rollout status "${d}"
-done
-
-echo "Complete."
