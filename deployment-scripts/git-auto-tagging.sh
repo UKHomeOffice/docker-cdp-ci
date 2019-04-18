@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+
+# GITHUB_REPO_BASE_URL="github.com/UKHomeOffice/"
+# GITLAB_REPO_BASE_URL="gitlab.digital.homeoffice.gov.uk/cdp_code/"
+# COMPONENT_NAME="auto-deploy-temp"
+
+# Needs to be set as an environment variable
+# USER_NAME=
+
+# Needs to be set as an environment variable
+# GIT_TOKEN=
+
+VERSION_FILE=".version"
+
+function showUsage {
+  echo "Usage: checkout-version.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
+}
+
+function gitTag {
+    echo ">>>>>> tagging.. \n"
+    git tag $nVersion
+
+    git push $REPO $nVersion
+
+    if [[ ! $? -eq 0 ]];
+    then
+    echo ">>>>>> Failed to push to remote!!!"
+        exit 1
+    fi
+}
+
+function checkIfExist {
+    if [[ -z "$1" ]];
+    then
+        echo "$2"
+        return 1
+    fi
+}
+
+function checkIfExistOrShowUsage {
+    checkIfExist "$1" "$2" || { showUsage; exit 1; }
+}
+
+
+
+for i in "$@"
+do
+case $i in
+    -repo_root=*|--repo_root=*)
+    REPO_BASE_URL="${i#*=}"
+    ;;
+    -comp=*|--component=*)
+    COMPONENT_NAME="${i#*=}"
+    ;;
+esac
+done
+
+checkIfExist "$USER_NAME" "GIT_USER must be set as an environment variable!!!" || exit 1
+checkIfExist "$GIT_TOKEN" "GIT_TOKEN must be set as an environment variable!!!" || exit 1
+checkIfExistOrShowUsage "$REPO_BASE_URL" "Missing repo root!!!"
+checkIfExistOrShowUsage "$COMPONENT_NAME" "Missing component!!!"
+
+REPO="https://$USER_NAME:$GIT_TOKEN@$REPO_BASE_URL$COMPONENT_NAME.git"
+
+echo ">>>>>> cloning >>> $REPO  \n"
+
+git clone $REPO
+
+if [[ ! $? -eq 0 ]];
+then
+    echo ">>>>>> Couldn't clone the repository!!!! \n"
+    exit 1
+fi
+
+echo ">>>>>> Cloned $COMPONENT_NAME  \n"
+
+cd $COMPONENT_NAME
+
+#Check if .version file exist
+
+if [[ -e $VERSION_FILE ]];
+ then
+    version=$(<.version)
+    version=${version// /}
+
+    echo ">>>>>> current-version='$version'  \n"
+
+    nVersion=$(../version-generator.sh "$version")
+
+    echo ">>>>>> nextVersion=$nVersion   \n"
+
+    #Write next version to .version file
+    echo "$nVersion" > $VERSION_FILE
+
+    checkIfExist "$nVersion" ">>>>>> Next version can't be empty" || exit 1
+
+    #checkin .version file
+    echo ">>>>>> updating .version file with the next version \n"
+
+    git commit -am "Updated version number to $nVersion"
+
+    git push $REPO
+
+    if [[ $? -eq 0 ]];
+    then
+        echo ">>>>>> updated .version file with the next version \n"
+
+        #tag repo with the next version
+        gitTag
+
+        echo ">>>>>> tagged..  \n"
+    else
+        echo ">>>>>> Failed to push to remote!!!"
+        exit 1
+    fi
+ else
+    echo ">>>>>> $VERSION_FILE file doesn't exist in $COMPONENT_NAME \n"
+    exit 1
+fi
