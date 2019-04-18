@@ -30,7 +30,6 @@ regex='^(v)([0-9]+\.){0,2}(\*|[0-9]+)$'
     exit 1
  fi
 
-echo "current-version=$cVersion"
 
 OIFS=$IFS
 IFS='.'
@@ -53,4 +52,4 @@ fi
 
 nVersion="$majorV.$minorV.$patch"
 
-echo "nextVersion=$nVersion"
+echo "$nVersion"
