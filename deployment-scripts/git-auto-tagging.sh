@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
+<<COMMENT
+    Auto-tagging script which checks out a repo from gitlab/github and extracts the current version from .version file.
 
+    The version is then bumped up using version-generator.sh and the new version is written back to .version file and checked into gitlab/github.
+
+    The script then tags the repo with the new version.
+
+    This script expects as input repository root path without the "https" and the name of the component/repo.
+
+    Assumptions: GIT_USER and GIT_TOKEN set as environment variables
+
+    Usage: git-auto-tagging.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp
+
+COMMENT
 
 # GITHUB_REPO_BASE_URL="github.com/UKHomeOffice/"
 # GITLAB_REPO_BASE_URL="gitlab.digital.homeoffice.gov.uk/cdp_code/"
 # COMPONENT_NAME="auto-deploy-temp"
 
 # Needs to be set as an environment variable
-# USER_NAME=
+# GIT_USER=
 
 # Needs to be set as an environment variable
 # GIT_TOKEN=
@@ -14,7 +27,7 @@
 VERSION_FILE=".version"
 
 function showUsage {
-  echo "Usage: checkout-version.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
+  echo "Usage: git-auto-tagging.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
 }
 
 function gitTag {
@@ -56,12 +69,12 @@ case $i in
 esac
 done
 
-checkIfExist "$USER_NAME" "GIT_USER must be set as an environment variable!!!" || exit 1
+checkIfExist "$GIT_USER" "GIT_USER must be set as an environment variable!!!" || exit 1
 checkIfExist "$GIT_TOKEN" "GIT_TOKEN must be set as an environment variable!!!" || exit 1
 checkIfExistOrShowUsage "$REPO_BASE_URL" "Missing repo root!!!"
 checkIfExistOrShowUsage "$COMPONENT_NAME" "Missing component!!!"
 
-REPO="https://$USER_NAME:$GIT_TOKEN@$REPO_BASE_URL$COMPONENT_NAME.git"
+REPO="https://$GIT_USER:$GIT_TOKEN@$REPO_BASE_URL$COMPONENT_NAME.git"
 
 echo ">>>>>> cloning >>> $REPO  \n"
 
@@ -86,7 +99,8 @@ if [[ -e $VERSION_FILE ]];
 
     echo ">>>>>> current-version='$version'  \n"
 
-    nVersion=$(../version-generator.sh "$version")
+#    nVersion=$(../version-generator.sh "$version")
+    . ../version-generator.sh "$version"
 
     echo ">>>>>> nextVersion=$nVersion   \n"
 
