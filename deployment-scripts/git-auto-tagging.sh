@@ -99,8 +99,7 @@ if [[ -e $VERSION_FILE ]];
 
     echo ">>>>>> current-version='$version'  \n"
 
-#    nVersion=$(../version-generator.sh "$version")
-    . ../version-generator.sh "$version"
+    nVersion=$(../version-generator.sh "$version")
 
     echo ">>>>>> nextVersion=$nVersion   \n"
 
