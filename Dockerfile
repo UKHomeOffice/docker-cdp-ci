@@ -13,7 +13,6 @@ RUN apk add -q --no-cache \
   gettext \
   git \
   grep \
-  jq \
   libffi \
   libffi-dev \
   make \
