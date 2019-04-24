@@ -5,6 +5,8 @@ function usage {
 Usage: ${0} BASE_DIR ENV
 Deploys to the ENV environment.
 BASE_DIR is the base folder containing the configurations for all environments
+
+If environment variable TEST is defined, ${0} works in test/debug mode and prints out the output from kustomize
 EOF
 }
 
@@ -22,7 +24,6 @@ fi
 
 export BASE_DIR=$1
 export KUBE_NAMESPACE=$2
-export TEST=$3
 
 set -euo pipefail
 # automatically export all environment variables

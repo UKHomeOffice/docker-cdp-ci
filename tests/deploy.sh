@@ -3,7 +3,7 @@
 
 @test "Test deploy with a dummy environment" {
   cd /tests
-  ACTUAL=$(deploy.sh deploy-dummy cdp-dev test)
+  ACTUAL=$(TEST=1 deploy.sh deploy-dummy cdp-dev)
   EXPECTED=$(cat deploy.expected)
   DIFF=$(diff <(echo "$ACTUAL" ) <(echo "$EXPECTED"))
 
