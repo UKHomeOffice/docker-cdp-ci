@@ -11,12 +11,17 @@ function run_test {
 
   rm -rf ${repo}
   git clone $git_url 
+  cd ${repo}
   git checkout robot-${comp}
-  gib pull
-  result=$(cat ${repo}/manifest/$comp)
+  git pull
+  result=$(cat manifest/$comp)
   expected=$uri
+  echo RESULT=$result
+  echo EXPECTED=$expected
   
   [[ "$result" == "$expected" ]]
+  cd ..
+  rm -rf ${repo}
 }
 
 @test "Normal normal results" {
