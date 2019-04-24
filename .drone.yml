@@ -9,15 +9,23 @@ pipeline:
   docker-build:
     image: ukhomeoffice/drone-docker
     repo: '${DOCKER_REPO}/${NAME}'
+    secrets:
+      - git_deployment_key
     dry_run: true
+    build_args:
+      - GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}
     when:
       event: pull_request
   docker-build-and-push:
     image: ukhomeoffice/drone-docker
-    secrets: [ docker_password ]
+    secrets:
+      - git_deployment_key
+      - docker_password
     username: '${DOCKER_USERNAME}'
     repo: '${DOCKER_REPO}/${NAME}'
     registry: '${DOCKER_REPO}'
     auto_tag: true
+    build_args:
+      - GIT_DEPLOYMENT_KEY=${GIT_DEPLOYMENT_KEY}
     when:
       event: tag
