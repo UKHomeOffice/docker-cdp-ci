@@ -75,7 +75,12 @@ source "${CDP_DEPLOYMENT_TEMPLATES_DIR}/vars/common.cfg"
 source "${ENV_BASE_DIR}/conf.cfg"
 set +a
 
-kubectl="kubectl --insecure-skip-tls-verify --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
+if [[ -z ${KUBE_CERTIFICATE_AUTHORITY_DATA+x} ]]; then
+    kubectl="kubectl --insecure-skip-tls-verify --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
+else
+    echo ${KUBE_CERTIFICATE_AUTHORITY_DATA} | base64 -d > /tmp/kube-ca
+    kubectl="kubectl --certificate-authority=/tmp/kube-ca --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
+fi
 
 if [[ -z "${TEST+x}" ]]; then 
   echo "Beginning deployment to ${KUBE_NAMESPACE}."
