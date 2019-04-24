@@ -20,9 +20,7 @@ function run_test {
 }
 
 @test "Normal normal results" {
-  run_test "git@github.com:UKHomeOffice/cdp-deployment-templates-test.git" "component1" "imageuri1"
-  run_test "v0.1" "v0.1.0"
-  run_test "v0.2" "v0.2.0"
+  run_test "cdp-deployment-templates-test" "component1" "imageuri1"
 }
 
 @test "invoking update-manifest.sh without arguments prints usage" {
@@ -32,9 +30,9 @@ function run_test {
 }
 
 @test "invoking version-generator.sh with invalid arguments prints error" {
-  run update-manifest.sh "afsd" "comp" "image-uri"
+  run update-manifest.sh "asdf" "comp" "image-uri"
   [ "$status" -ne 0 ]
-  [ "${lines[0]}" = "Failed to clone repo" ]
+  [ "${lines[0]}" = "fatal: repository 'asdf' does not exist" ]
 
   run update-manifest.sh "afsd" 
   [ "$status" -ne 0 ]

@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-if [[ -z "$0" ]] || [[ -z "$1" ]]  || [[ -z "$2" ]]; then 
+if [[ -z "$1" ]] || [[ -z "$2" ]]  || [[ -z "$3" ]]; then 
   echo "Usage: update-manifest.sh <manifest-git-repo> <component-name> <image-uri>"
   exit -1;
 fi
@@ -12,8 +12,8 @@ uri=$3
 
 set -euo pipefail
 
-if [[ ! -z "$GIT_DEPLOYMENT_KEY+x" ]]; then 
-  git-set-credentials $GIT_DEPLOYMENT_KEY
+if [[ ! -z "${GIT_DEPLOYMENT_KEY+x}" ]]; then 
+  git-set-credentials.sh $GIT_DEPLOYMENT_KEY
 fi
 
 repo_name=$(echo $git_url| sed -e 's#.*/## ; s/.git//g')
