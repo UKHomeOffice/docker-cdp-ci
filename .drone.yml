@@ -1,31 +1,36 @@
 matrix:
   NAME:
     - ukhomeofficedigital/cdp-ci
-  DOCKER_USERNAME:
-    - ukhomeofficedigital+cdp_ci
   DOCKER_REPO:
     - quay.io
 pipeline:
   docker-build:
-    image: ukhomeoffice/drone-docker
-    repo: '${DOCKER_REPO}/${NAME}'
+    image: docker
     secrets:
+      - docker_username
       - git_deployment_key
-    dry_run: true
-    build_args:
-      - GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
-      event: pull_request
+      event:
+        # - pull_request
+        - push
+        - tag
+
   docker-build-and-push:
-    image: ukhomeoffice/drone-docker
+    image: docker
     secrets:
-      - git_deployment_key
+      - docker_username
       - docker_password
-    username: '${DOCKER_USERNAME}'
-    repo: '${DOCKER_REPO}/${NAME}'
-    registry: '${DOCKER_REPO}'
-    auto_tag: true
-    build_args:
-      - GIT_DEPLOYMENT_KEY=${GIT_DEPLOYMENT_KEY}
+    commands:
+      - docker login -u="${DOCKER_USERNAME}" -p=$${DOCKER_PASSWORD} ${DOCKER_REPO}
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA}
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:latest
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:$${DRONE_TAG}
+      - docker push ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA}
+      - docker push ${DOCKER_REPO}/${NAME}:latest
+      - docker push ${DOCKER_REPO}/${NAME}:$${DRONE_TAG}
     when:
       event: tag
