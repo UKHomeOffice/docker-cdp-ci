@@ -16,7 +16,7 @@ pipeline:
     when:
       event:
         - pull_request
-        - push
+        # - push
         - tag
 
   docker-build-and-push:
