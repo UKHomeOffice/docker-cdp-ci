@@ -12,8 +12,12 @@ pipeline:
     environment:
       - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
-      - echo $(echo $$DOCKER_USERNAME | wc -c)
-      - echo $(echo $$GIT_DEPLOYMENT_KEY | wc -c)
+      - echo 1 $(echo $${DOCKER_USERNAME} | wc -c)
+      - echo 2 v$(echo $${GIT_DEPLOYMENT_KEY} | wc -c)
+      - echo 3 $(echo ${DOCKER_USERNAME} | wc -c)
+      - echo 4 $(echo ${GIT_DEPLOYMENT_KEY} | wc -c)
+      - echo 5 $(echo $DOCKER_USERNAME | wc -c)
+      - echo 6 $(echo $GIT_DEPLOYMENT_KEY | wc -c)
       - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
       event:
