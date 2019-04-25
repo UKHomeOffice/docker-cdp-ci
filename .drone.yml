@@ -7,13 +7,12 @@ pipeline:
   docker-build:
     image: docker
     secrets:
-      - docker_username
       - git_deployment_key
     environment:
       - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
-      - echo DOCKER_USERNAME=$${DOCKER_USERNAME}
-      - docker build --build-arg GIT_DEPLOYMENT_KEY="$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
+      - echo $(echo $$GIT_DEPLOYMENT_KEY | wc -c)
+      - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
       event:
         - pull_request
