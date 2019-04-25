@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
