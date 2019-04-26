@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bats
 
 function teardown() {
 COMPONENT="cdp-auto-deploy-temp"
