@@ -27,7 +27,7 @@ COMMENT
 VERSION_FILE=".version"
 
 function showUsage {
-  echo "Usage: git-auto-tagging.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
+  echo "Usage: git-auto-tagging.sh -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
 }
 
 function gitTag {
@@ -88,30 +88,39 @@ fi
 
 echo ">>>>>> Cloned $COMPONENT_NAME  \n"
 
-cd $COMPONENT_NAME
+#cd $COMPONENT_NAME
 
 #Check if .version file exist
 
-if [[ -e $VERSION_FILE ]];
+if [[ -e $COMPONENT_NAME/$VERSION_FILE ]];
  then
-    version=$(<.version)
+#    version=$(<.version)
+    version=$(<$COMPONENT_NAME/$VERSION_FILE)
     version=${version// /}
 
     echo ">>>>>> current-version='$version'  \n"
 
-    nVersion=$(../version-generator.sh "$version")
+    nVersion=$(version-generator.sh "$version")
+
+    if [[ $? -gt 0 ]]; #Exit if version generator failed
+    then
+        echo "$nVersion"
+        exit 1
+    fi
 
     echo ">>>>>> nextVersion=$nVersion   \n"
 
-    #Write next version to .version file
-    echo "$nVersion" > $VERSION_FILE
-
     checkIfExist "$nVersion" ">>>>>> Next version can't be empty" || exit 1
+
+    #Write next version to .version file
+    echo "$nVersion" > $COMPONENT_NAME/$VERSION_FILE
+
 
     #checkin .version file
     echo ">>>>>> updating .version file with the next version \n"
 
-    git commit -am "Updated version number to $nVersion"
+    cd $COMPONENT_NAME
+    git commit -am "Updated version number from $version to $nVersion"
 
     git push $REPO
 
