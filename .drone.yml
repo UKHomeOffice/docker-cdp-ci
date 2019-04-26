@@ -1,23 +1,42 @@
 matrix:
   NAME:
     - ukhomeofficedigital/cdp-ci
-  DOCKER_USERNAME:
-    - ukhomeofficedigital+cdp_ci
   DOCKER_REPO:
     - quay.io
 pipeline:
   docker-build:
-    image: ukhomeoffice/drone-docker
-    repo: '${DOCKER_REPO}/${NAME}'
-    dry_run: true
+    image: docker
+    secrets:
+      - docker_username
+      - git_deployment_key
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
-      event: pull_request
+      event:
+        # ideally we would like to trigger the build when a pull_request event is received
+        # however, it looks like there is a bug as the following occurs:
+        # despite the fact that the pull_request and push event share the same pipeline step and all the DRONE_ vars used
+        # are available for both types of event, the GIT_DEPLOYMENT_KEY secret appears to not be populated for 
+        # pull_request events, resulting in one of the tests failing (that test is successful when the piepline is triggered
+        # from a push event)
+        # - pull_request
+        - push
+        - tag
+
   docker-build-and-push:
-    image: ukhomeoffice/drone-docker
-    secrets: [ docker_password ]
-    username: '${DOCKER_USERNAME}'
-    repo: '${DOCKER_REPO}/${NAME}'
-    registry: '${DOCKER_REPO}'
-    auto_tag: true
+    image: docker
+    secrets:
+      - docker_username
+      - docker_password
+    commands:
+      - docker login -u="${DOCKER_USERNAME}" -p=$${DOCKER_PASSWORD} ${DOCKER_REPO}
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA}
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:latest
+      - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:$${DRONE_TAG}
+      - docker push ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA}
+      - docker push ${DOCKER_REPO}/${NAME}:latest
+      - docker push ${DOCKER_REPO}/${NAME}:$${DRONE_TAG}
     when:
       event: tag

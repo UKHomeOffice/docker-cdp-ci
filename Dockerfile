@@ -45,9 +45,16 @@ chmod u+x /usr/bin/kustomize
 
 ADD deployment-scripts /usr/bin/
 
+# git needs perl to do pull requests from the command line.
+RUN apk add -q --no-cache perl && \
+ git config --global user.email "cdp@homeoffice.gov.uk" && \
+ git config --global user.name "CDP"
+
 CMD ["bash"]
 
 FROM build as test
+ARG GIT_DEPLOYMENT_KEY
+ENV GIT_DEPLOYMENT_KEY=$GIT_DEPLOYMENT_KEY
 RUN echo 'Beginning tests'
 RUN cd / && git clone https://github.com/sstephenson/bats.git &&  cd bats && ./install.sh /usr/local
 ADD tests /tests
