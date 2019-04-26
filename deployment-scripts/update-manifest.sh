@@ -19,13 +19,9 @@ if [[ ! -z "${GIT_DEPLOYMENT_KEY+x}" ]]; then
 fi
 
 cd $DIR
-repo_name=$(echo $git_url| sed -e 's#.*/## ; s/.git//g')
+repo_name=$(basename $git_url | sed -e 's/\.git$//')
 rm -rf $repo_name
 git clone --depth 1 --single-branch --branch master $git_url
-if [[ $? -ne 0 ]]; then 
-  echo "Failed to clone repo"
-  exit -1
-fi
 cd $DIR/$repo_name
 git pull
 git checkout -B "robot-${comp}"
@@ -33,7 +29,6 @@ git checkout -B "robot-${comp}"
 echo $uri > manifest/$comp
 
 git add manifest/$comp 
-git commit -am "New version of component $comp available on $uri" || true
+git commit -m "New version of component $comp available on $uri"
 git push --set-upstream --force origin "robot-${comp}"
 git request-pull -p master ./
-
