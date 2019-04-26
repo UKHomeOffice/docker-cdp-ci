@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-teardown() {
+function teardown() {
 COMPONENT="cdp-auto-deploy-temp"
 rm -Rf $COMPONENT
 
 }
 
-array_contains () {
+function array_contains () {
     local array="$1[@]"
     local seeking=$2
     local in=1
