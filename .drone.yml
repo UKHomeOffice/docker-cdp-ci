@@ -15,7 +15,7 @@ pipeline:
       - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
       event:
-        # - pull_request
+        - pull_request
         - push
         - tag
 
