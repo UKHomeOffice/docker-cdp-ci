@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 function teardown() {
-COMPONENT="cdp-auto-deploy-temp"
+COMPONENT="auto-deploy-temp"
 rm -Rf $COMPONENT
 
 }
@@ -25,7 +25,7 @@ function array_contains () {
 
 
 @test "invoking git-auto-tagging.sh without GIT_USER set as an Environment variable prints error" {
-
+skip
   SET_GIT_USER="$GIT_USER"
   export GIT_USER=""
   run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/ -comp=auto-deploy-temp
@@ -37,7 +37,7 @@ function array_contains () {
 }
 
 @test "invoking git-auto-tagging.sh without GIT_TOKEN set as an Environment variable prints error" {
-
+skip
   SET_GIT_TOKEN="$GIT_TOKEN"
   export GIT_TOKEN=""
   run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/ -comp=auto-deploy-temp
@@ -51,36 +51,39 @@ function array_contains () {
 @test "invoking git-auto-tagging.sh without repo_root prints usage" {
 
   run git-auto-tagging.sh
+  for i in {0..10}; do echo "${lines[i]}"; done
   [ "$status" -ne 0 ]
   [ "${lines[0]}" = "Missing repo root!!!" ]
-  [ "${lines[1]}" = "Usage: git-auto-tagging.sh -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp" ]
+  [ "${lines[1]}" = "Usage: git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=auto-deploy-temp" ]
 }
 
 
 @test "invoking git-auto-tagging.sh without component name/ application name prints usage" {
 
   run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/
+  for i in {0..10}; do echo "${lines[i]}"; done
   [ "$status" -ne 0 ]
   [ "${lines[0]}" = "Missing component!!!" ]
-  [ "${lines[1]}" = "Usage: git-auto-tagging.sh -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp" ]
+  [ "${lines[1]}" = "Usage: git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=auto-deploy-temp" ]
 }
 
 @test "invoking git-auto-tagging.sh with non-existent component prints error" {
 
-  run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/ -comp=non-existent-comp
+  run git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=non-existent-comp
+  for i in {0..20}; do echo "${lines[i]}"; done
   [ "$status" -ne 0 ]
-  [ "${lines[4]}" = ">>>>>> Couldn't clone the repository!!!! \n" ]
+  array_contains lines ">>>>>> Couldn't clone the repository!!!! \n"
 }
 
 
 @test "invoking git-auto-tagging.sh with correct arguments commits the next version and tag the component" {
 
-    COMPONENT="cdp-auto-deploy-temp"
+    COMPONENT="auto-deploy-temp"
 
     #Given - current version is in .version file
     CURRENT_VERSION=v1.2.3
     EXPECTED_NEXT_VERSION=v1.2.4
-    REPO="https://$GIT_USER:$GIT_TOKEN@gitlab.digital.homeoffice.gov.uk/cdp_code/$COMPONENT.git"
+    REPO="git@github.com:UKHomeOffice/$COMPONENT.git"
     git clone $REPO
     cd $COMPONENT
 
@@ -98,14 +101,14 @@ function array_contains () {
 
 
   #When
-  run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/ -comp=$COMPONENT
+  run git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=$COMPONENT
 
 
   #Then
 
   [ "$status" == 0 ]
 
-  array_contains lines ">>>>>> Cloned cdp-auto-deploy-temp  \n"
+  array_contains lines ">>>>>> Cloned auto-deploy-temp  \n"
 
   cd $COMPONENT
 
@@ -138,12 +141,12 @@ function array_contains () {
 
 @test "invoking git-auto-tagging.sh when the current version is invalid then no tag is created" {
 
-    COMPONENT="cdp-auto-deploy-temp"
+    COMPONENT="auto-deploy-temp"
 
     #Given - current version is in .version file
     CURRENT_VERSION=z1.2.3
 
-    REPO="https://$GIT_USER:$GIT_TOKEN@gitlab.digital.homeoffice.gov.uk/cdp_code/$COMPONENT.git"
+    REPO="git@github.com:UKHomeOffice/$COMPONENT.git"
     git clone $REPO
     cd $COMPONENT
 
@@ -160,7 +163,7 @@ function array_contains () {
     rm -Rf $COMPONENT
 
   #When
-  run git-auto-tagging.sh -repo_root=gitlab.digital.homeoffice.gov.uk/cdp_code/ -comp=$COMPONENT
+  run git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=$COMPONENT
 
     for i in {0..20}; do echo "${lines[i]}"; done
   #Then

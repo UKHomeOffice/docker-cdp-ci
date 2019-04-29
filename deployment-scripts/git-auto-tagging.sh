@@ -6,11 +6,11 @@
 
     The script then tags the repo with the new version.
 
-    This script expects as input repository root path without the "https" and the name of the component/repo.
+    This script expects as input repository root path and name of the component/repo.
 
-    Assumptions: GIT_USER and GIT_TOKEN set as environment variables
+    Assumptions: git ssh key added to ssh-agent
 
-    Usage: git-auto-tagging.sh  -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp
+    Usage: git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=auto-deploy-temp
 
 COMMENT
 
@@ -27,7 +27,7 @@ COMMENT
 VERSION_FILE=".version"
 
 function showUsage {
-  echo "Usage: git-auto-tagging.sh -repo_root=github.com/UKHomeOffice/ -comp=auto-deploy-temp"
+  echo "Usage: git-auto-tagging.sh -repo_root=github.com:UKHomeOffice/ -comp=auto-deploy-temp"
 }
 
 function gitTag {
@@ -69,12 +69,16 @@ case $i in
 esac
 done
 
-checkIfExist "$GIT_USER" "GIT_USER must be set as an environment variable!!!" || exit 1
-checkIfExist "$GIT_TOKEN" "GIT_TOKEN must be set as an environment variable!!!" || exit 1
+#checkIfExist "$GIT_USER" "GIT_USER must be set as an environment variable!!!" || exit 1
+#checkIfExist "$GIT_TOKEN" "GIT_TOKEN must be set as an environment variable!!!" || exit 1
+if [[ ! -z "${GIT_DEPLOYMENT_KEY+x}" ]]; then
+  git-set-creds-github.sh "$GIT_DEPLOYMENT_KEY"
+fi
 checkIfExistOrShowUsage "$REPO_BASE_URL" "Missing repo root!!!"
 checkIfExistOrShowUsage "$COMPONENT_NAME" "Missing component!!!"
 
-REPO="https://$GIT_USER:$GIT_TOKEN@$REPO_BASE_URL$COMPONENT_NAME.git"
+#REPO="https://$GIT_USER:$GIT_TOKEN@$REPO_BASE_URL$COMPONENT_NAME.git"
+REPO="git@$REPO_BASE_URL$COMPONENT_NAME.git"
 
 echo ">>>>>> cloning >>> $REPO  \n"
 
