@@ -9,10 +9,11 @@ pipeline:
     secrets:
       - docker_username
       - git_deployment_key
+      - git_deployment_key_auto_deploy_temp
     environment:
       - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
-      - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
+      - docker build --build-arg "GIT_DEPLOYMENT_KEY=$${GIT_DEPLOYMENT_KEY}" --build-arg "GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP=$${GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP}" -t ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA} .
     when:
       event:
         # ideally we would like to trigger the build when a pull_request event is received

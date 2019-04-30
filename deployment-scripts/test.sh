@@ -3,7 +3,7 @@
 function usage {
     cat << EOF
 Usage: ${0} BASE_DIR ENV
-Deploys to the ENV environment.
+Runs tests in the ENV environment.
 BASE_DIR is the base folder containing the configurations for all environments
 
 If environment variable TEST is defined, ${0} works in test/debug mode and prints out the output from kustomize
@@ -22,4 +22,4 @@ if [[ -z $1 ]] || [[ -z $2 ]]; then
     exit 1
 fi
 
-run-operation.sh deploy $1 $2
+run-operation.sh test $1 $2
