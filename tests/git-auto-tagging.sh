@@ -23,7 +23,8 @@ function array_contains () {
     return $in
 }
 
-@setup "Test cases setup" {
+function setup() {
+  # test cases setup
   export GIT_DEPLOYMENT_KEY=${GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP}
 }
 
