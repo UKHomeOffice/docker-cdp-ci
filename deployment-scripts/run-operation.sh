@@ -107,7 +107,10 @@ if [[ -z "${TEST+x}" ]]; then
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
     for test_rc in ${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/* do
-      cat ${test_fc} | emvsubst | kubectl create -f -
+      PERF_TEST_NAME=${PERF_TEST_NAME:-${DRONE_REPO}_${DRONE_TAG}_${RANDOM}}
+      cat ${test_fc} | envsubst | kubectl create -f -
+      kubectl wait --for=condition=complete --timeout=600s "${PERF_TEST_NAME}"
+      kubectl delete job "${PERF_TEST_NAME}"
     done
 
     echo "All resources updated."
