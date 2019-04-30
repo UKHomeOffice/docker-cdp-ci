@@ -31,6 +31,8 @@ pipeline:
     secrets:
       - docker_username
       - docker_password
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
       - docker login -u="$${DOCKER_USERNAME}" -p=$${DOCKER_PASSWORD} ${DOCKER_REPO}
       - docker tag cdp-ci:$${DRONE_COMMIT_SHA} ${DOCKER_REPO}/${NAME}:$${DRONE_COMMIT_SHA}
