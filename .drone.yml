@@ -1,6 +1,6 @@
 matrix:
   NAME:
-    - ukhomeofficedigital/cdp-ci
+    - ukhomeofficedigital/docker-cdp-ci
   DOCKER_REPO:
     - quay.io
 pipeline:
