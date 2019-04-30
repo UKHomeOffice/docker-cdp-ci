@@ -55,6 +55,8 @@ CMD ["bash"]
 FROM build as test
 ARG GIT_DEPLOYMENT_KEY
 ENV GIT_DEPLOYMENT_KEY=$GIT_DEPLOYMENT_KEY
+ARG GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP
+ENV GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP=$GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP
 RUN echo 'Beginning tests'
 RUN cd / && git clone https://github.com/sstephenson/bats.git &&  cd bats && ./install.sh /usr/local
 ADD tests /tests

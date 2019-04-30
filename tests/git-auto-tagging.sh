@@ -23,6 +23,9 @@ function array_contains () {
     return $in
 }
 
+@setup "Test cases setup" {
+  export GIT_DEPLOYMENT_KEY=${GIT_DEPLOYMENT_KEY_AUTO_DEPLOY_TEMP}
+}
 
 @test "invoking git-auto-tagging.sh without GIT_USER set as an Environment variable prints error" {
 skip
