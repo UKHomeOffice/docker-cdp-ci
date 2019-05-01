@@ -30,7 +30,6 @@ export BASE_DIR=$2
 export KUBE_NAMESPACE=$3
 
 set -euo pipefail
-# automatically export all environment variables
 
 export ENV_BASE_DIR="${BASE_DIR}/environments/${KUBE_NAMESPACE}"
 export ENV_OPERATION_BASE_DIR="${ENV_BASE_DIR}/${OPERATION}"
@@ -80,6 +79,7 @@ cd ${ENV_OPERATION_BASE_DIR}
 git clone -q --branch ${TAG} --depth 1 https://github.com/UKHomeOffice/cdp-deployment-templates.git 2> /dev/null
 cd -
 
+# automatically export all environment variables
 set -a
 source "${CDP_DEPLOYMENT_TEMPLATES_DIR}/vars/common.cfg"
 source "${ENV_BASE_DIR}/conf.cfg"
@@ -106,11 +106,31 @@ if [[ -z "${TEST+x}" ]]; then
     done
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
-    for test_rc in "${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/*" ; do
-      PERF_TEST_NAME="${PERF_TEST_NAME:-${DRONE_REPO}_${DRONE_TAG}_${RANDOM}}"
-      cat ${test_fc} | envsubst | kubectl create -f -
-      kubectl wait --for=condition=complete --timeout=600s "${PERF_TEST_NAME}"
-      kubectl delete job "${PERF_TEST_NAME}"
+    for test_rc in "${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/${PERF_TEST_JOB_GLOB}" ; do
+      export PERF_TEST_NAME="${PERF_TEST_NAME:-${DRONE_REPO}-$(date +%s%3N)-${RANDOM}}"
+      cat ${test_rc} | envsubst | ${kubectl} create -f -
+
+      # disable catching errors
+      set +e
+      ${kubectl} wait --for=condition=complete "--timeout=${PERF_TEST_TIMEOUT}s" "job/${PERF_TEST_NAME}"
+      wait_status=$?
+      # re-enable catching errors
+      set -e
+
+      # work out the pod names that ran the job
+      PERF_POD_NAMES=$(${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=jsonpath={.items..metadata.name})
+      echo ${PERF_POD_NAMES}
+      ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=json
+
+      # output the job's logs
+      ${kubectl} logs ${PERF_POD_NAMES}
+
+      ${kubectl} delete job "${PERF_TEST_NAME}"
+
+      if [[ ${wait_status} != 0 ]]; then
+        echo "job did not complete in a timely fashion: ${wait_status}"
+        exit 7
+      fi
     done
 
     echo "All resources updated."
