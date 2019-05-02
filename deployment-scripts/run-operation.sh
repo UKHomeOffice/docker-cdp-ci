@@ -92,7 +92,9 @@ else
     kubectl="kubectl --certificate-authority=/tmp/kube-ca --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
 fi
 
+# if env var TEST is defined, we are testing this script and therefor
 if [[ -z "${TEST+x}" ]]; then 
+  # TEST is undefined so run a proper deployment or performance test
   echo "Beginning deployment to ${KUBE_NAMESPACE}."
 
   kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst | ${kubectl} apply -f - 
@@ -142,6 +144,15 @@ if [[ -z "${TEST+x}" ]]; then
   fi
 
 else
+  # we are testing this script
+  # so output the resource definitions that would normally be processed by kubectl
   kustomize build ${ENV_OPERATION_BASE_DIR} 
+
+  if [[ $OPERATION == "test" ]]; then
+    for test_rc in "${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/${PERF_TEST_JOB_GLOB}" ; do
+      export PERF_TEST_NAME="${PERF_TEST_NAME:-$(echo ${DRONE_REPO} | sed -e 's#.*/##g')-$(date +%s%3N)-${RANDOM}}"
+      cat ${test_rc}
+    done
+  fi
 fi
 

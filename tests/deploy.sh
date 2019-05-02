@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 
-@test "Test deploy with a dummy environment" {
+@test "Run deploy with a dummy environment" {
   cd /tests
   ACTUAL=$(TEST=1 deploy.sh deploy-dummy cdp-dev)
   EXPECTED=$(cat deploy.expected)
