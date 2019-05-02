@@ -107,7 +107,7 @@ if [[ -z "${TEST+x}" ]]; then
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
     for test_rc in "${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/${PERF_TEST_JOB_GLOB}" ; do
-      export PERF_TEST_NAME="${PERF_TEST_NAME:-$(echo ${DRONE_REPO} | sed -e 's#/#-#g')-$(date +%s%3N)-${RANDOM}}"
+      export PERF_TEST_NAME="${PERF_TEST_NAME:-$(echo ${DRONE_REPO} | sed -e 's#.*/##g')-$(date +%s%3N)-${RANDOM}}"
       cat ${test_rc} | envsubst | ${kubectl} create -f -
 
       # disable catching errors
