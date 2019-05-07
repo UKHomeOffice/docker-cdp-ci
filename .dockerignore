@@ -1,0 +1,8 @@
+LICENSE
+README.md
+.drone.yml
+.gitignore
+Dockerfile
+.git
+foo
+foo.pub
