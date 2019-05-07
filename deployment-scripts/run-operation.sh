@@ -103,9 +103,8 @@ if [[ -z "${TEST+x}" ]]; then
   if [[ $OPERATION == "deploy" ]]; then
    echo "All resources updated."
 
-    for d in `${kubectl} get deploy -o name`; do
-        ${kubectl} rollout status "${d}"
-    done
+    kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst |  kubectl wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s"  -f -
+
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
     for test_rc in "${ENV_OPERATION_BASE_DIR}/cdp-deployment-templates/k8s-perf-test/${PERF_TEST_JOB_GLOB}" ; do
