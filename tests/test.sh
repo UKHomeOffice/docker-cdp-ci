@@ -18,5 +18,6 @@
 
   [ "$status" -ne 0 ]
   [ "${lines[0]}" = "Usage: /usr/bin/test.sh BASE_DIR ENV [PERF_TEST_JOB_GLOB PERF_TEST_CONF_GLOB PERF_TEST_TIMEOUT]" ]
+
 }
 
