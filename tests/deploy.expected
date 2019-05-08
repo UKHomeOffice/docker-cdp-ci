@@ -480,11 +480,15 @@ data:
     #graph.replace-instance-if-exists=true
 kind: ConfigMap
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   name: tinkerpop-graphdb-schema-loader
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   labels:
     name: elasticsearch
     role: service
@@ -504,6 +508,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   labels:
     name: tinkerpop-graphdb-schema-loader
     role: service
@@ -521,6 +527,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   name: elasticsearch
 spec:
   replicas: ${ELASTICSEARCH_K8S_REPLICAS}
@@ -534,6 +542,8 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
       labels:
         name: elasticsearch
     spec:
@@ -558,6 +568,8 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   name: tinkerpop-graphdb-schema-loader
 spec:
   replicas: ${GRAPHDB_PERSONA_SCHEMA_LOADER_K8S_REPLICAS}
@@ -568,6 +580,8 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
       labels:
         name: tinkerpop-graphdb-schema-loader
     spec:
@@ -624,6 +638,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   name: ingress-network-policy-elasticsearch
 spec:
   ingress:
@@ -641,6 +657,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
   name: ingress-network-policy-tinkerpop-graphdb-schema-loader
 spec:
   ingress:

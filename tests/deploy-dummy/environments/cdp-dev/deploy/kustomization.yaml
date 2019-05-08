@@ -1,5 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+commonAnnotations:
+  downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
 
 resources:
   - cdp-deployment-templates/k8s-template/tinkerpop-graphdb-schema-loader.yaml
