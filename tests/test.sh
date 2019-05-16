@@ -3,14 +3,8 @@
 
 @test "Run test with a dummy environment" {
   cd /tests
-  ACTUAL=$(TEST=1 test.sh deploy-dummy cdp-dev)
-  EXPECTED=$(cat test.expected)
-  DIFF=$(diff <(echo "$ACTUAL" ) <(echo "$EXPECTED"))
-
-  echo $DIFF
-  
-  [ -z "${DIFF}" ]
-
+  TEST=1 test.sh deploy-dummy cdp-dev > test.actual
+  diff test.expected test.actual
 }
 
 @test "invoking test.sh without arguments prints usage" {
