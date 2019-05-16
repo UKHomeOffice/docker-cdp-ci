@@ -276,6 +276,11 @@ data:
     #
 
     gremlin.graph=org.janusgraph.core.JanusGraphFactory
+
+    metrics.enabled=true
+    metrics.jmx.enabled=true
+    metrics.jmx.domain=graphdb
+
     #metrics.enabled=true
     #metrics.prefix=j
     #metrics.csv.interval=1000
@@ -316,33 +321,33 @@ data:
     #storage.dynamodb.max-self-throttled-retries=60
     storage.dynamodb.max-self-throttled-retries=600
 
-    storage.dynamodb.stores.edgestore.initial-capacity-read=7500
-    storage.dynamodb.stores.edgestore.initial-capacity-write=65000
-    storage.dynamodb.stores.edgestore.read-rate=1250
-    storage.dynamodb.stores.edgestore.write-rate=10833
+    storage.dynamodb.stores.edgestore.initial-capacity-read=1
+    storage.dynamodb.stores.edgestore.initial-capacity-write=1
+    storage.dynamodb.stores.edgestore.read-rate=1
+    storage.dynamodb.stores.edgestore.write-rate=1
 
-    storage.dynamodb.stores.graphindex.initial-capacity-read=12000
-    storage.dynamodb.stores.graphindex.initial-capacity-write=5000
-    storage.dynamodb.stores.graphindex.read-rate=2000
-    storage.dynamodb.stores.graphindex.write-rate=833
+    storage.dynamodb.stores.graphindex.initial-capacity-read=1
+    storage.dynamodb.stores.graphindex.initial-capacity-write=1
+    storage.dynamodb.stores.graphindex.read-rate=1
+    storage.dynamodb.stores.graphindex.write-rate=1
 
-    storage.dynamodb.stores.systemlog.initial-capacity-read=6
-    storage.dynamodb.stores.systemlog.initial-capacity-write=6
+    storage.dynamodb.stores.systemlog.initial-capacity-read=1
+    storage.dynamodb.stores.systemlog.initial-capacity-write=1
     storage.dynamodb.stores.systemlog.read-rate=1
     storage.dynamodb.stores.systemlog.write-rate=1
 
-    storage.dynamodb.stores.janusgraph_ids.initial-capacity-read=12
-    storage.dynamodb.stores.janusgraph_ids.initial-capacity-write=12
-    storage.dynamodb.stores.janusgraph_ids.read-rate=2
-    storage.dynamodb.stores.janusgraph_ids.write-rate=2
+    storage.dynamodb.stores.janusgraph_ids.initial-capacity-read=1
+    storage.dynamodb.stores.janusgraph_ids.initial-capacity-write=1
+    storage.dynamodb.stores.janusgraph_ids.read-rate=1
+    storage.dynamodb.stores.janusgraph_ids.write-rate=1
 
-    storage.dynamodb.stores.system_properties.initial-capacity-read=6
-    storage.dynamodb.stores.system_properties.initial-capacity-write=6
+    storage.dynamodb.stores.system_properties.initial-capacity-read=1
+    storage.dynamodb.stores.system_properties.initial-capacity-write=1
     storage.dynamodb.stores.system_properties.read-rate=1
     storage.dynamodb.stores.system_properties.write-rate=1
 
-    storage.dynamodb.stores.txlog.initial-capacity-read=6
-    storage.dynamodb.stores.txlog.initial-capacity-write=6
+    storage.dynamodb.stores.txlog.initial-capacity-read=1
+    storage.dynamodb.stores.txlog.initial-capacity-write=1
     storage.dynamodb.stores.txlog.read-rate=1
     storage.dynamodb.stores.txlog.write-rate=1
 
@@ -582,11 +587,17 @@ spec:
     metadata:
       annotations:
         downscaler/uptime: Mon-Fri 08:00-19:00 Europe/London
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
       labels:
         name: tinkerpop-graphdb-schema-loader
     spec:
       containers:
-      - env:
+      - command:
+        - /opt/graphdb/bin/run-graph.sh
+        - /opt/graphdb/conf/gremlin-server-embedded.yml
+        env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
@@ -599,8 +610,12 @@ spec:
               name: tinkerpop-graphdb
         - name: AWS_DEFAULT_REGION
           value: eu-west-2
-        - name: PVGDPR_OPTS
-          value: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap  -Dcom.sun.management.jmxremote
+        - name: GRAPHDB_OPTS
+          value: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap   -Dcom.sun.management.jmxremote=true
+            -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false
+            -Dcom.sun.management.jmxremote.ssl=false -javaagent:/opt/graphdb/lib/jmx-prometheus-javaagent.jar=8080:/opt/graphdb/conf/graphdb-prometheus-jmx.yaml
+        - name: SYSDIG_AGENT_CONF
+          value: '{"prometheus":{"enabled":true}}'
         image: ${GRAPHDB_PERSONA_SCHEMA_LOADER_K8S_IMAGE}
         imagePullPolicy: Always
         livenessProbe:
