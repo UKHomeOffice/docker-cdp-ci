@@ -113,14 +113,22 @@ if [[ -z "${TEST+x}" ]]; then
 
       # disable catching errors
       set +e
-      ${kubectl} wait --for=condition=complete "--timeout=${PERF_TEST_TIMEOUT}s" "job/${PERF_TEST_NAME}"
+      #${kubectl} wait --for=condition=complete "--timeout=${PERF_TEST_TIMEOUT}s" "job/${PERF_TEST_NAME}"
+      until [[ $SECONDS -gt $PERF_TEST_TIMEOUT ]] || 
+            [[ $(${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}') == "True" ]] || 
+            [[ $(${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}') == "True" ]]; do
+              SECONDS=$(( SECONDS + 1))
+              sleep 1;
+      done
+
       wait_status=$?
       # re-enable catching errors
       set -e
 
       # work out the pod names that ran the job
       PERF_POD_NAMES=$(${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=jsonpath={.items..metadata.name})
-      echo ${PERF_POD_NAMES}
+      STATUS=$( ${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.containerStatuses..state.terminated.exitCode}')
+      echo ${PERF_POD_NAMES} $STATUS
       ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=json
 
       # output the job's logs
