@@ -121,7 +121,6 @@ if [[ -z "${TEST+x}" ]]; then
               sleep 1;
       done
 
-      wait_status=$?
       # re-enable catching errors
       set -e
 
@@ -144,6 +143,8 @@ if [[ -z "${TEST+x}" ]]; then
     done
 
     echo "All resources updated."
+
+    exit ${STATUS}
 
     # for d in `${kubectl} get deploy -o name`; do
     #     ${kubectl} rollout status "${d}"
