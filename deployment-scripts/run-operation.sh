@@ -127,18 +127,19 @@ if [[ -z "${TEST+x}" ]]; then
 
       # work out the pod names that ran the job
       PERF_POD_NAMES=$(${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=jsonpath={.items..metadata.name})
-      STATUS=$( ${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.containerStatuses..state.terminated.exitCode}')
-      echo ${PERF_POD_NAMES} $STATUS
       ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=json
+
+      STATUS=$( ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" -o jsonpath='{.items..status.containerStatuses..state.terminated.exitCode}')
+      echo "POD NAME = ${PERF_POD_NAMES}; status = $STATUS"
 
       # output the job's logs
       ${kubectl} logs ${PERF_POD_NAMES}
 
       ${kubectl} delete job "${PERF_TEST_NAME}"
 
-      if [[ ${wait_status} != 0 ]]; then
-        echo "job did not complete in a timely fashion: ${wait_status}"
-        exit 7
+      if [[ ${STATUS} != 0 ]]; then
+        echo "job did not complete in a healthy status: ${STATUS}"
+        exit ${STATUS}
       fi
     done
 
