@@ -1,0 +1,17 @@
+Description: Creates an S3 bucket that can be used when uploading lambda packages
+Parameters:
+  BucketName:
+    Description: Name of the S3 bucket that will contain lambda packages
+    Type: String
+Resources:
+  LambdaBucket:
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Ref 'BucketName'
+      VersioningConfiguration:
+        Status: Enabled
+    Type: AWS::S3::Bucket
+
