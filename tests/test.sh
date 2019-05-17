@@ -3,13 +3,8 @@
 
 @test "Run test with a dummy environment" {
   cd /tests
-  ACTUAL=$(TEST=1 test.sh deploy-dummy cdp-dev)
-  EXPECTED=$(cat deploy-dummy/environments/cdp-dev/test/cdp-deployment-templates/test.expected)
-  DIFF=$(diff <(echo "$ACTUAL" ) <(echo "$EXPECTED"))
-
-  echo $DIFF
-  
-  [ -z "${DIFF}" ]
+  TEST=1 test.sh deploy-dummy cdp-dev > test.actual
+  diff deploy-dummy/environments/cdp-dev/deploy/cdp-deployment-templates/test.expected  test.actual
 
 }
 
