@@ -3,10 +3,12 @@
 
 @test "Run test with a dummy environment" {
   cd /tests
+  export PERF_TEST_NAME=PERFTEST
   TEST=1 test.sh deploy-dummy cdp-dev > test.actual
-  diff deploy-dummy/environments/cdp-dev/deploy/cdp-deployment-templates/test.expected  test.actual
+  diff deploy-dummy/environments/cdp-dev/test/cdp-deployment-templates/test.expected  test.actual
 
 }
+
 
 @test "invoking test.sh without arguments prints usage" {
   run test.sh
