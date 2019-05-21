@@ -144,7 +144,7 @@ if [[ -z "${TEST+x}" ]]; then
 
     echo "All resources updated."
 
-    exit ${STATUS}
+    exit 0
 
     # for d in `${kubectl} get deploy -o name`; do
     #     ${kubectl} rollout status "${d}"
