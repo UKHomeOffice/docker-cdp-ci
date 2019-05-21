@@ -113,28 +113,38 @@ if [[ -z "${TEST+x}" ]]; then
 
       # disable catching errors
       set +e
-      ${kubectl} wait --for=condition=complete "--timeout=${PERF_TEST_TIMEOUT}s" "job/${PERF_TEST_NAME}"
-      wait_status=$?
+      #${kubectl} wait --for=condition=complete "--timeout=${PERF_TEST_TIMEOUT}s" "job/${PERF_TEST_NAME}"
+      until [[ $SECONDS -gt $PERF_TEST_TIMEOUT ]] || 
+            [[ $(${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}') == "True" ]] || 
+            [[ $(${kubectl} get jobs $PERF_TEST_NAME -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}') == "True" ]]; do
+              SECONDS=$(( SECONDS + 1))
+              sleep 1;
+      done
+
       # re-enable catching errors
       set -e
 
       # work out the pod names that ran the job
       PERF_POD_NAMES=$(${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=jsonpath={.items..metadata.name})
-      echo ${PERF_POD_NAMES}
       ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" --output=json
+
+      STATUS=$( ${kubectl} get pod "--selector=job-name=${PERF_TEST_NAME}" -o jsonpath='{.items..status.containerStatuses..state.terminated.exitCode}')
+      echo "POD NAME = ${PERF_POD_NAMES}; status = $STATUS"
 
       # output the job's logs
       ${kubectl} logs ${PERF_POD_NAMES}
 
       ${kubectl} delete job "${PERF_TEST_NAME}"
 
-      if [[ ${wait_status} != 0 ]]; then
-        echo "job did not complete in a timely fashion: ${wait_status}"
-        exit 7
+      if [[ ${STATUS} != 0 ]]; then
+        echo "job did not complete in a healthy status: ${STATUS}"
+        exit ${STATUS}
       fi
     done
 
     echo "All resources updated."
+
+    exit 0
 
     # for d in `${kubectl} get deploy -o name`; do
     #     ${kubectl} rollout status "${d}"

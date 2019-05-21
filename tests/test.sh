@@ -3,15 +3,12 @@
 
 @test "Run test with a dummy environment" {
   cd /tests
-  ACTUAL=$(TEST=1 test.sh deploy-dummy cdp-dev)
-  EXPECTED=$(cat test.expected)
-  DIFF=$(diff <(echo "$ACTUAL" ) <(echo "$EXPECTED"))
-
-  echo $DIFF
-  
-  [ -z "${DIFF}" ]
+  export PERF_TEST_NAME=PERFTEST
+  TEST=1 test.sh deploy-dummy cdp-dev > test.actual
+  diff deploy-dummy/environments/cdp-dev/test/cdp-deployment-templates/test.expected  test.actual
 
 }
+
 
 @test "invoking test.sh without arguments prints usage" {
   run test.sh

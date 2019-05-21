@@ -32,4 +32,7 @@ export PERF_TEST_CONF_GLOB=${4:-*.yml}
 # PERF_TEST_TIMEOUT is the time in seconds to wait for the performance test to finish
 export PERF_TEST_TIMEOUT=${5:-600}
 
+export PERF_TEST_AVG_THRESHOLD=${PERF_TEST_AVG_THRESHOLD:-100ms}
+export PERF_TEST_P90_THRESHOLD=${PERF_TEST_P90_THRESHOLD:-200ms}
+
 run-operation.sh test $1 $2
