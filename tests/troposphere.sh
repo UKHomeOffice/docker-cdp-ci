@@ -28,6 +28,10 @@ function teadown() {
   sam --version
 }
 
+@test "Make sure pylint is installed" {
+  pylint --version
+}
+
 @test "Generate CloudFormation template" {
     python /tests/troposphere/lambda-bucket.py > /tests/troposphere/lambda-bucket-template.actual
     diff /tests/troposphere/lambda-bucket-template.expected /tests/troposphere/lambda-bucket-template.actual
