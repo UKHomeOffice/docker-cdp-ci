@@ -103,7 +103,7 @@ if [[ -z "${TEST+x}" ]]; then
   if [[ $OPERATION == "deploy" ]]; then
    echo "All resources updated."
 
-    kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst |  kubectl wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s"  -f -
+    kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst |  ${kubectl} wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s"  -f -
 
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
