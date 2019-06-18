@@ -1,6 +1,6 @@
 FROM alpine as build
 
-ENV KUBECTL_VERSION=1.12.3
+ENV KUBECTL_VERSION=1.14.1
 
 RUN apk upgrade -q --no-cache
 RUN apk add -q --no-cache \
