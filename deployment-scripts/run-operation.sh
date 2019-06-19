@@ -92,16 +92,27 @@ else
     kubectl="kubectl --certificate-authority=/tmp/kube-ca --server=${KUBE_SERVER} --namespace=${KUBE_NAMESPACE} --token=${KUBE_TOKEN}"
 fi
 
-# if env var TEST is defined, we are testing this script and therefor
+# if env var TEST is defined, we are testing this script
 if [[ -z "${TEST+x}" ]]; then 
+  # deployment pre-processing
+  if [[ $OPERATION == "test" ]]; then
+    # Get an access token from Keycloak
+    export ACCESS_TOKEN=$(curl -sSf -d "client_id=${KEYCLOAK_CLIENT_ID}&client_secret=${KEYCLOAK_CLIENT_SECRET}&grant_type=client_credentials" \
+                            https://${KEYCLOAK_URL}/auth/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token | \
+                            jq -r .access_token)
+    # and store it as Kubernetes secret for the Taurus job to pick up                          
+    ${kubectl} delete secret access-token || true
+    ${kubectl} create secret generic access-token --from-literal=access_token=$ACCESS_TOKEN
+  fi
+
   # TEST is undefined so run a proper deployment or performance test
   echo "Beginning deployment to ${KUBE_NAMESPACE}."
 
   kustomize build ${ENV_OPERATION_BASE_DIR} | envsubst | ${kubectl} apply -f - 
   
-  
+  # deployment post-processing
   if [[ $OPERATION == "deploy" ]]; then
-   echo "All resources updated."
+    echo "All resources updated."
 
      ${kubectl} wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s" --all deployments
 
@@ -136,6 +147,8 @@ if [[ -z "${TEST+x}" ]]; then
 
       ${kubectl} delete job "${PERF_TEST_NAME}"
 
+      ${kubectl} delete secret access-token || true
+
       if [[ ${STATUS} != 0 ]]; then
         echo "job did not complete in a healthy status: ${STATUS}"
         exit ${STATUS}
@@ -153,6 +166,7 @@ if [[ -z "${TEST+x}" ]]; then
   fi
 
 else
+  # TEST is defined
   # we are testing this script
   # so output the resource definitions that would normally be processed by kubectl
   kustomize build ${ENV_OPERATION_BASE_DIR} 
