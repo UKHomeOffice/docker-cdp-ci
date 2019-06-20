@@ -97,13 +97,13 @@ if [[ -z "${TEST+x}" ]]; then
   # TEST is undefined so run a proper deployment or performance test
   echo "Beginning deployment to ${KUBE_NAMESPACE}."
 
-  kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst | ${kubectl} apply -f - 
+  kustomize build ${ENV_OPERATION_BASE_DIR} | envsubst | ${kubectl} apply -f - 
   
   
   if [[ $OPERATION == "deploy" ]]; then
    echo "All resources updated."
 
-    kustomize build ${ENV_OPERATION_BASE_DIR}| envsubst |  ${kubectl} wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s"  -f -
+     ${kubectl} wait --for=condition=Available "--timeout=${DEPLOYMENT_TIMEOUT:-300}s" --all deployments
 
     echo "Complete."
   elif [[ $OPERATION == "test" ]]; then
