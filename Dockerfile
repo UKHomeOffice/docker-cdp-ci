@@ -29,6 +29,7 @@ RUN apk add -q --no-cache \
   nss \
   openjdk8 \
   zip \
+  jq \
  && pip install -q --upgrade pip \
  && pip install -q docker-compose
 
